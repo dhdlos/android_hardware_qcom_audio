@@ -1374,13 +1374,13 @@ static unsigned calculate_audpre_table_index(unsigned index)
 }
 size_t AudioHardware::getInputBufferSize(uint32_t sampleRate, int format, int channelCount)
 {
-    if ((format != AudioSystem::PCM_16_BIT) &&
+    if ((format != AUDIO_FORMAT_PCM_16_BIT) &&
 #ifdef WITH_QCOM_SPEECH
-        (format != AudioSystem::AMR_NB)      &&
-        (format != AudioSystem::EVRC)      &&
-        (format != AudioSystem::QCELP)  &&
+        (format != AUDIO_FORMAT_AMR_NB)      &&
+        (format != AUDIO_FORMAT_EVRC)      &&
+        (format != AUDIO_FORMAT_QCELP)  &&
 #endif
-        (format != AudioSystem::AAC)){
+        (format != AUDIO_FORMAT_AAC)){
         ALOGW("getInputBufferSize bad format: %d", format);
         return 0;
     }
@@ -1389,14 +1389,14 @@ size_t AudioHardware::getInputBufferSize(uint32_t sampleRate, int format, int ch
         return 0;
     }
 
-    if (format == AudioSystem::AAC)
+    if (format == AUDIO_FORMAT_AAC)
        return 2048;
 #ifdef WITH_QCOM_SPEECH
-    else if (format == AudioSystem::AMR_NB)
+    else if (format == AUDIO_FORMAT_AMR_NB)
        return 320*channelCount;
-    else if (format == AudioSystem::EVRC)
+    else if (format == AUDIO_FORMAT_EVRC)
        return 230*channelCount;
-    else if (format == AudioSystem::QCELP)
+    else if (format == AUDIO_FORMAT_QCELP)
        return 350*channelCount;
 #endif
 #ifdef WITH_QCOM_VOIP_OVER_MVS
@@ -3586,17 +3586,17 @@ status_t AudioHardware::AudioStreamInMSM72xx::set(
     if ((pFormat == 0) ||
         ((*pFormat != AUDIO_HW_IN_FORMAT) &&
 #ifdef WITH_QCOM_SPEECH
-         (*pFormat != AudioSystem::AMR_NB) &&
-         (*pFormat != AudioSystem::EVRC) &&
-         (*pFormat != AudioSystem::QCELP) &&
+         (*pFormat != AUDIO_FORMAT_AMR_NB) &&
+         (*pFormat != AUDIO_FORMAT_EVRC) &&
+         (*pFormat != AUDIO_FORMAT_QCELP) &&
 #endif
-         (*pFormat != AudioSystem::AAC)))
+         (*pFormat != AUDIO_FORMAT_AAC)))
     {
         *pFormat = AUDIO_HW_IN_FORMAT;
         return BAD_VALUE;
     }
 
-    if((*pFormat == AudioSystem::AAC) && (*pChannels & (AudioSystem::CHANNEL_IN_VOICE_DNLINK |  AudioSystem::CHANNEL_IN_VOICE_UPLINK))) {
+    if((*pFormat == AUDIO_FORMAT_AAC) && (*pChannels & (AudioSystem::CHANNEL_IN_VOICE_DNLINK |  AudioSystem::CHANNEL_IN_VOICE_UPLINK))) {
         ALOGE("voice call recording in AAC format does not support");
         return BAD_VALUE;
     }
@@ -3767,7 +3767,7 @@ status_t AudioHardware::AudioStreamInMSM72xx::set(
         mBufferSize = config.buffer_size;
     }
 #ifdef WITH_QCOM_SPEECH
-    else if (*pFormat == AudioSystem::EVRC)
+    else if (*pFormat == AUDIO_FORMAT_EVRC)
     {
           ALOGI("Recording format: EVRC");
           // open evrc input device
@@ -3836,7 +3836,7 @@ status_t AudioHardware::AudioStreamInMSM72xx::set(
             goto  Error;
           }
     }
-    else if (*pFormat == AudioSystem::QCELP)
+    else if (*pFormat == AUDIO_FORMAT_QCELP)
     {
           ALOGI("Recording format: QCELP");
           // open qcelp input device
@@ -3906,7 +3906,7 @@ status_t AudioHardware::AudioStreamInMSM72xx::set(
             goto  Error;
           }
     }
-    else if (*pFormat == AudioSystem::AMR_NB)
+    else if (*pFormat == AUDIO_FORMAT_AMR_NB)
     {
           ALOGI("Recording format: AMR_NB");
           // open amr_nb input device
@@ -3977,7 +3977,7 @@ status_t AudioHardware::AudioStreamInMSM72xx::set(
           }
     }
 #endif
-    else if (*pFormat == AudioSystem::AAC)
+    else if (*pFormat == AUDIO_FORMAT_AAC)
     {
           ALOGI("Recording format: AAC");
           // open aac input device
@@ -4208,7 +4208,7 @@ ssize_t AudioHardware::AudioStreamInMSM72xx::read( void* buffer, ssize_t bytes)
         }
     }
 #ifdef WITH_QCOM_SPEECH
-    else if ((mFormat == AudioSystem::EVRC) || (mFormat == AudioSystem::QCELP) || (mFormat == AudioSystem::AMR_NB))
+    else if ((mFormat == AUDIO_FORMAT_EVRC) || (mFormat == AUDIO_FORMAT_QCELP) || (mFormat == AUDIO_FORMAT_AMR_NB))
     {
         uint8_t readBuf[36];
         uint8_t *dataPtr;
@@ -4216,7 +4216,7 @@ ssize_t AudioHardware::AudioStreamInMSM72xx::read( void* buffer, ssize_t bytes)
             dataPtr = readBuf;
             ssize_t bytesRead = ::read(mFd, readBuf, 36);
             if (bytesRead >= 0) {
-                if (mFormat == AudioSystem::AMR_NB){
+                if (mFormat == AUDIO_FORMAT_AMR_NB){
                    amr_transcode(dataPtr,p);
                    p += AMRNB_FRAME_SIZE;
                    count -= AMRNB_FRAME_SIZE;
@@ -4229,7 +4229,7 @@ ssize_t AudioHardware::AudioStreamInMSM72xx::read( void* buffer, ssize_t bytes)
                 }
                 else {
                     dataPtr++;
-                    if (mFormat == AudioSystem::EVRC){
+                    if (mFormat == AUDIO_FORMAT_EVRC){
                        memcpy(p, dataPtr, EVRC_FRAME_SIZE);
                        p += EVRC_FRAME_SIZE;
                        count -= EVRC_FRAME_SIZE;
@@ -4240,7 +4240,7 @@ ssize_t AudioHardware::AudioStreamInMSM72xx::read( void* buffer, ssize_t bytes)
                           break;
                        }
                     }
-                    else if (mFormat == AudioSystem::QCELP){
+                    else if (mFormat == AUDIO_FORMAT_QCELP){
                        memcpy(p, dataPtr, QCELP_FRAME_SIZE);
                        p += QCELP_FRAME_SIZE;
                        count -= QCELP_FRAME_SIZE;
@@ -4261,7 +4261,7 @@ ssize_t AudioHardware::AudioStreamInMSM72xx::read( void* buffer, ssize_t bytes)
         }
     }
 #endif
-    else if (mFormat == AudioSystem::AAC)
+    else if (mFormat == AUDIO_FORMAT_AAC)
     {
         *((uint32_t*)recogPtr) = 0x51434F4D ;// ('Q','C','O', 'M') Number to identify format as AAC by higher layers
         recogPtr++;
@@ -4312,7 +4312,7 @@ ssize_t AudioHardware::AudioStreamInMSM72xx::read( void* buffer, ssize_t bytes)
         }
     }
 
-    if (mFormat == AudioSystem::AAC)
+    if (mFormat == AUDIO_FORMAT_AAC)
          return aac_framesize;
 
         return bytes;
