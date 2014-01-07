@@ -115,6 +115,7 @@ static uint32_t convert_audio_device(uint32_t from_device, int from_rev, int to_
     }
     return to_device;
 }
+
 /** audio_stream_out implementation **/
 static uint32_t out_get_sample_rate(const struct audio_stream *stream)
 {
@@ -192,6 +193,7 @@ static int out_set_parameters(struct audio_stream *stream, const char *kvpairs)
         parms.addInt(String8(AUDIO_PARAMETER_STREAM_ROUTING), val);
         s8 = parms.toString();
     }
+
     return out->qcom_out->setParameters(s8);
 }
 
@@ -201,7 +203,9 @@ static char * out_get_parameters(const struct audio_stream *stream, const char *
         reinterpret_cast<const struct qcom_stream_out *>(stream);
     String8 s8;
     int val;
+
     s8 = out->qcom_out->getParameters(String8(keys));
+
     AudioParameter parms = AudioParameter(s8);
     if (parms.getInt(String8(AUDIO_PARAMETER_STREAM_ROUTING), val) == NO_ERROR) {
         val = convert_audio_device(val, HAL_API_REV_1_0, HAL_API_REV_2_0);
@@ -209,6 +213,7 @@ static char * out_get_parameters(const struct audio_stream *stream, const char *
         parms.addInt(String8(AUDIO_PARAMETER_STREAM_ROUTING), val);
         s8 = parms.toString();
     }
+
     return strdup(s8.string());
 }
 
@@ -336,6 +341,7 @@ static int in_set_parameters(struct audio_stream *stream, const char *kvpairs)
         parms.addInt(String8(AUDIO_PARAMETER_STREAM_ROUTING), val);
         s8 = parms.toString();
     }
+
     return in->qcom_in->setParameters(s8);
 }
 
@@ -346,7 +352,9 @@ static char * in_get_parameters(const struct audio_stream *stream,
         reinterpret_cast<const struct qcom_stream_in *>(stream);
     String8 s8;
     int val;
+
     s8 = in->qcom_in->getParameters(String8(keys));
+
     AudioParameter parms = AudioParameter(s8);
     if (parms.getInt(String8(AUDIO_PARAMETER_STREAM_ROUTING), val) == NO_ERROR) {
         val = convert_audio_device(val, HAL_API_REV_1_0, HAL_API_REV_2_0);
@@ -354,6 +362,7 @@ static char * in_get_parameters(const struct audio_stream *stream,
         parms.addInt(String8(AUDIO_PARAMETER_STREAM_ROUTING), val);
         s8 = parms.toString();
     }
+
     return strdup(s8.string());
 }
 

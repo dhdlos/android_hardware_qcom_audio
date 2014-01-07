@@ -113,6 +113,7 @@ static const uint32_t SND_DEVICE_HDMI = 15;
 static const uint32_t SND_DEVICE_FM_TX = 16;
 static const uint32_t SND_DEVICE_FM_TX_AND_SPEAKER = 17;
 static const uint32_t SND_DEVICE_HEADPHONE_AND_SPEAKER = 18;
+static const uint32_t SND_DEVICE_BACK_MIC_CAMCORDER = 33;
 #ifdef HTC_AUDIO
 static const uint32_t SND_DEVICE_CARKIT = 19;
 static const uint32_t SND_DEVICE_HANDSET_BACK_MIC = 20;
@@ -162,6 +163,8 @@ static const uint32_t DEVICE_HDMI_STERO_RX = 15;       /* hdmi_stereo_rx */
 static const uint32_t DEVICE_FMRADIO_STEREO_RX = 16;
 static const uint32_t DEVICE_BT_SCO_RX = 17;           /* bt_sco_rx */
 static const uint32_t DEVICE_BT_SCO_TX = 18;           /* bt_sco_tx */
+static const uint32_t DEVICE_CAMCORDER_TX = 105;       /* caf: camcorder_tx
+                                                          semc: speaker_secondary_mic_tx */
 #if defined(SAMSUNG_AUDIO)
 static const uint32_t DEVICE_HANDSET_VOIP_RX = 40;     /* handset_voip_rx */
 static const uint32_t DEVICE_HANDSET_VOIP_TX = 41;     /* handset_voip_tx */
@@ -183,7 +186,7 @@ static const uint32_t DEVICE_ALT_RX = 21;              /* alt_mono_rx */
 static const uint32_t DEVICE_VR_HANDSET = 22;          /* handset_vr_tx */
 static const uint32_t DEVICE_COUNT = DEVICE_VR_HANDSET +1;
 #else
-static uint32_t DEVICE_COUNT = DEVICE_BT_SCO_TX +1;
+static const uint32_t DEVICE_COUNT = DEVICE_CAMCORDER_TX +1;
 #endif
 
 #ifdef HTC_AUDIO
@@ -713,30 +716,35 @@ AudioHardware::AudioHardware() :
             else if(strcmp((char*)name[i],"fmradio_stereo_rx") == 0)
                 index = DEVICE_FMRADIO_STEREO_RX;
 #ifdef SAMSUNG_AUDIO
-	    else if(strcmp((char* )name[i], "handset_voip_rx") == 0)
-	        index = DEVICE_HANDSET_VOIP_RX;
-	    else if(strcmp((char* )name[i], "handset_voip_tx") == 0)
-	        index = DEVICE_HANDSET_VOIP_TX;
-	    else if(strcmp((char* )name[i], "speaker_voip_rx") == 0)
-	        index = DEVICE_SPEAKER_VOIP_RX;
-	    else if(strcmp((char* )name[i], "speaker_voip_tx") == 0)
-	        index = DEVICE_SPEAKER_VOIP_TX;
-	    else if(strcmp((char* )name[i], "headset_voip_rx") == 0)
-	        index = DEVICE_HEADSET_VOIP_RX;
-	    else if(strcmp((char* )name[i], "headset_voip_tx") == 0)
-	        index = DEVICE_HEADSET_VOIP_TX;
-	    else if(strcmp((char* )name[i], "handset_call_rx") == 0)
-	        index = DEVICE_HANDSET_CALL_RX;
-	    else if(strcmp((char* )name[i], "handset_call_tx") == 0)
-	        index = DEVICE_HANDSET_CALL_TX;
-	    else if(strcmp((char* )name[i], "speaker_call_rx") == 0)
-	        index = DEVICE_SPEAKER_CALL_RX;
-	    else if(strcmp((char* )name[i], "speaker_call_tx") == 0)
-	        index = DEVICE_SPEAKER_CALL_TX;
-	    else if(strcmp((char* )name[i], "headset_call_rx") == 0)
-	        index = DEVICE_HEADSET_CALL_RX;
-	    else if(strcmp((char* )name[i], "headset_call_tx") == 0)
-	        index = DEVICE_HEADSET_CALL_TX;
+            else if(strcmp((char* )name[i], "handset_voip_rx") == 0)
+                index = DEVICE_HANDSET_VOIP_RX;
+            else if(strcmp((char* )name[i], "handset_voip_tx") == 0)
+                index = DEVICE_HANDSET_VOIP_TX;
+            else if(strcmp((char* )name[i], "speaker_voip_rx") == 0)
+                index = DEVICE_SPEAKER_VOIP_RX;
+            else if(strcmp((char* )name[i], "speaker_voip_tx") == 0)
+                index = DEVICE_SPEAKER_VOIP_TX;
+            else if(strcmp((char* )name[i], "headset_voip_rx") == 0)
+                index = DEVICE_HEADSET_VOIP_RX;
+            else if(strcmp((char* )name[i], "headset_voip_tx") == 0)
+                index = DEVICE_HEADSET_VOIP_TX;
+            else if(strcmp((char* )name[i], "handset_call_rx") == 0)
+                index = DEVICE_HANDSET_CALL_RX;
+            else if(strcmp((char* )name[i], "handset_call_tx") == 0)
+                index = DEVICE_HANDSET_CALL_TX;
+            else if(strcmp((char* )name[i], "speaker_call_rx") == 0)
+                index = DEVICE_SPEAKER_CALL_RX;
+            else if(strcmp((char* )name[i], "speaker_call_tx") == 0)
+                index = DEVICE_SPEAKER_CALL_TX;
+            else if(strcmp((char* )name[i], "headset_call_rx") == 0)
+                index = DEVICE_HEADSET_CALL_RX;
+            else if(strcmp((char* )name[i], "headset_call_tx") == 0)
+                index = DEVICE_HEADSET_CALL_TX;
+#endif
+#ifdef BACK_MIC_CAMCORDER
+            else if((strcmp((char* )name[i], "camcorder_tx") == 0) ||
+                    (strcmp((char* )name[i], "speaker_secondary_mic_tx") == 0))
+                index = DEVICE_CAMCORDER_TX;
 #endif
             else
                 continue;
@@ -1374,13 +1382,13 @@ static unsigned calculate_audpre_table_index(unsigned index)
 }
 size_t AudioHardware::getInputBufferSize(uint32_t sampleRate, int format, int channelCount)
 {
-    if ((format != AUDIO_FORMAT_PCM_16_BIT) &&
+    if ((format != AudioSystem::PCM_16_BIT) &&
 #ifdef WITH_QCOM_SPEECH
-        (format != AUDIO_FORMAT_AMR_NB)      &&
-        (format != AUDIO_FORMAT_EVRC)      &&
-        (format != AUDIO_FORMAT_QCELP)  &&
+        (format != AudioSystem::AMR_NB)      &&
+        (format != AudioSystem::EVRC)      &&
+        (format != AudioSystem::QCELP)  &&
 #endif
-        (format != AUDIO_FORMAT_AAC)){
+        (format != AudioSystem::AAC)){
         ALOGW("getInputBufferSize bad format: %d", format);
         return 0;
     }
@@ -1389,14 +1397,14 @@ size_t AudioHardware::getInputBufferSize(uint32_t sampleRate, int format, int ch
         return 0;
     }
 
-    if (format == AUDIO_FORMAT_AAC)
+    if (format == AudioSystem::AAC)
        return 2048;
 #ifdef WITH_QCOM_SPEECH
-    else if (format == AUDIO_FORMAT_AMR_NB)
+    else if (format == AudioSystem::AMR_NB)
        return 320*channelCount;
-    else if (format == AUDIO_FORMAT_EVRC)
+    else if (format == AudioSystem::EVRC)
        return 230*channelCount;
-    else if (format == AUDIO_FORMAT_QCELP)
+    else if (format == AudioSystem::QCELP)
        return 350*channelCount;
 #endif
 #ifdef WITH_QCOM_VOIP_OVER_MVS
@@ -1758,6 +1766,13 @@ static status_t do_route_audio_rpc(uint32_t device,
         new_rx_device = DEVICE_HEADSET_CALL_RX;
         new_tx_device = DEVICE_HEADSET_CALL_TX;
         ALOGV("In CALL HEADSET");
+    }
+#endif
+#ifdef BACK_MIC_CAMCORDER
+    else if (device == SND_DEVICE_BACK_MIC_CAMCORDER) {
+        new_rx_device = cur_rx;
+        new_tx_device = DEVICE_CAMCORDER_TX;
+        ALOGV("In BACK_MIC_CAMCORDER");
     }
 #endif
 
@@ -2378,6 +2393,11 @@ status_t AudioHardware::doRouting(AudioStreamInMSM72xx *input)
             if (inputDevice & AudioSystem::DEVICE_IN_BLUETOOTH_SCO_HEADSET) {
                 ALOGI("Routing audio to Bluetooth PCM\n");
                 sndDevice = SND_DEVICE_BT;
+#ifdef BACK_MIC_CAMCORDER
+            } else if (inputDevice & AudioSystem::DEVICE_IN_BACK_MIC) {
+                ALOGI("Routing audio to back mic (camcorder)");
+                sndDevice = SND_DEVICE_BACK_MIC_CAMCORDER;
+#endif
             } else if (inputDevice & AudioSystem::DEVICE_IN_WIRED_HEADSET) {
                 if ((outputDevices & AudioSystem::DEVICE_OUT_WIRED_HEADSET) &&
                     (outputDevices & AudioSystem::DEVICE_OUT_SPEAKER)) {
@@ -3586,17 +3606,17 @@ status_t AudioHardware::AudioStreamInMSM72xx::set(
     if ((pFormat == 0) ||
         ((*pFormat != AUDIO_HW_IN_FORMAT) &&
 #ifdef WITH_QCOM_SPEECH
-         (*pFormat != AUDIO_FORMAT_AMR_NB) &&
-         (*pFormat != AUDIO_FORMAT_EVRC) &&
-         (*pFormat != AUDIO_FORMAT_QCELP) &&
+         (*pFormat != AudioSystem::AMR_NB) &&
+         (*pFormat != AudioSystem::EVRC) &&
+         (*pFormat != AudioSystem::QCELP) &&
 #endif
-         (*pFormat != AUDIO_FORMAT_AAC)))
+         (*pFormat != AudioSystem::AAC)))
     {
         *pFormat = AUDIO_HW_IN_FORMAT;
         return BAD_VALUE;
     }
 
-    if((*pFormat == AUDIO_FORMAT_AAC) && (*pChannels & (AudioSystem::CHANNEL_IN_VOICE_DNLINK |  AudioSystem::CHANNEL_IN_VOICE_UPLINK))) {
+    if((*pFormat == AudioSystem::AAC) && (*pChannels & (AudioSystem::CHANNEL_IN_VOICE_DNLINK |  AudioSystem::CHANNEL_IN_VOICE_UPLINK))) {
         ALOGE("voice call recording in AAC format does not support");
         return BAD_VALUE;
     }
@@ -3767,7 +3787,7 @@ status_t AudioHardware::AudioStreamInMSM72xx::set(
         mBufferSize = config.buffer_size;
     }
 #ifdef WITH_QCOM_SPEECH
-    else if (*pFormat == AUDIO_FORMAT_EVRC)
+    else if (*pFormat == AudioSystem::EVRC)
     {
           ALOGI("Recording format: EVRC");
           // open evrc input device
@@ -3836,7 +3856,7 @@ status_t AudioHardware::AudioStreamInMSM72xx::set(
             goto  Error;
           }
     }
-    else if (*pFormat == AUDIO_FORMAT_QCELP)
+    else if (*pFormat == AudioSystem::QCELP)
     {
           ALOGI("Recording format: QCELP");
           // open qcelp input device
@@ -3906,7 +3926,7 @@ status_t AudioHardware::AudioStreamInMSM72xx::set(
             goto  Error;
           }
     }
-    else if (*pFormat == AUDIO_FORMAT_AMR_NB)
+    else if (*pFormat == AudioSystem::AMR_NB)
     {
           ALOGI("Recording format: AMR_NB");
           // open amr_nb input device
@@ -3977,7 +3997,7 @@ status_t AudioHardware::AudioStreamInMSM72xx::set(
           }
     }
 #endif
-    else if (*pFormat == AUDIO_FORMAT_AAC)
+    else if (*pFormat == AudioSystem::AAC)
     {
           ALOGI("Recording format: AAC");
           // open aac input device
@@ -4208,7 +4228,7 @@ ssize_t AudioHardware::AudioStreamInMSM72xx::read( void* buffer, ssize_t bytes)
         }
     }
 #ifdef WITH_QCOM_SPEECH
-    else if ((mFormat == AUDIO_FORMAT_EVRC) || (mFormat == AUDIO_FORMAT_QCELP) || (mFormat == AUDIO_FORMAT_AMR_NB))
+    else if ((mFormat == AudioSystem::EVRC) || (mFormat == AudioSystem::QCELP) || (mFormat == AudioSystem::AMR_NB))
     {
         uint8_t readBuf[36];
         uint8_t *dataPtr;
@@ -4216,7 +4236,7 @@ ssize_t AudioHardware::AudioStreamInMSM72xx::read( void* buffer, ssize_t bytes)
             dataPtr = readBuf;
             ssize_t bytesRead = ::read(mFd, readBuf, 36);
             if (bytesRead >= 0) {
-                if (mFormat == AUDIO_FORMAT_AMR_NB){
+                if (mFormat == AudioSystem::AMR_NB){
                    amr_transcode(dataPtr,p);
                    p += AMRNB_FRAME_SIZE;
                    count -= AMRNB_FRAME_SIZE;
@@ -4229,7 +4249,7 @@ ssize_t AudioHardware::AudioStreamInMSM72xx::read( void* buffer, ssize_t bytes)
                 }
                 else {
                     dataPtr++;
-                    if (mFormat == AUDIO_FORMAT_EVRC){
+                    if (mFormat == AudioSystem::EVRC){
                        memcpy(p, dataPtr, EVRC_FRAME_SIZE);
                        p += EVRC_FRAME_SIZE;
                        count -= EVRC_FRAME_SIZE;
@@ -4240,7 +4260,7 @@ ssize_t AudioHardware::AudioStreamInMSM72xx::read( void* buffer, ssize_t bytes)
                           break;
                        }
                     }
-                    else if (mFormat == AUDIO_FORMAT_QCELP){
+                    else if (mFormat == AudioSystem::QCELP){
                        memcpy(p, dataPtr, QCELP_FRAME_SIZE);
                        p += QCELP_FRAME_SIZE;
                        count -= QCELP_FRAME_SIZE;
@@ -4261,7 +4281,7 @@ ssize_t AudioHardware::AudioStreamInMSM72xx::read( void* buffer, ssize_t bytes)
         }
     }
 #endif
-    else if (mFormat == AUDIO_FORMAT_AAC)
+    else if (mFormat == AudioSystem::AAC)
     {
         *((uint32_t*)recogPtr) = 0x51434F4D ;// ('Q','C','O', 'M') Number to identify format as AAC by higher layers
         recogPtr++;
@@ -4312,7 +4332,7 @@ ssize_t AudioHardware::AudioStreamInMSM72xx::read( void* buffer, ssize_t bytes)
         }
     }
 
-    if (mFormat == AUDIO_FORMAT_AAC)
+    if (mFormat == AudioSystem::AAC)
          return aac_framesize;
 
         return bytes;
