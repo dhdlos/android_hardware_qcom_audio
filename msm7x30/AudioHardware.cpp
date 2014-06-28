@@ -1133,16 +1133,11 @@ void AudioHardware::closeInputStream(AudioStreamIn* in) {
 
 status_t AudioHardware::setMode(int mode)
 {
-    int prevMode = mMode;
     status_t status = AudioHardwareBase::setMode(mode);
     if (status == NO_ERROR) {
         // make sure that doAudioRouteOrMute() is called by doRouting()
-        // when entering or exiting in call mode even if the new device
-        // selected is the same as current one.
-        if (((prevMode != AudioSystem::MODE_IN_CALL) && (mMode == AudioSystem::MODE_IN_CALL)) ||
-            ((prevMode == AudioSystem::MODE_IN_CALL) && (mMode != AudioSystem::MODE_IN_CALL))) {
-            clearCurDevice();
-        }
+        // even if the new device selected is the same as current one.
+        clearCurDevice();
     }
     return status;
 }
