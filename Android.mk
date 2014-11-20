@@ -1,4 +1,4 @@
-ifeq ($(call my-dir),$(call project-path-for,qcom-audio)/$(TARGET_BOARD_PLATFORM))
+ifeq ($(call my-dir),$(call project-path-for,qcom-audio))
 
 ifneq ($(filter msm7x30,$(TARGET_BOARD_PLATFORM)),)
 
