@@ -114,6 +114,8 @@ LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
 
 include $(BUILD_SHARED_LIBRARY)
 
+include $(LOCAL_PATH)/policy_hal/Android.mk
+
 # Load audio_policy.conf to system/etc/
 include $(CLEAR_VARS)
 LOCAL_MODULE       := audio_policy.conf
