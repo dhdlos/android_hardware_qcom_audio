@@ -97,6 +97,8 @@ endif
 
 include $(BUILD_SHARED_LIBRARY)
 
+include $(LOCAL_PATH)/policy_hal/Android.mk
+
 endif
 
 endif
