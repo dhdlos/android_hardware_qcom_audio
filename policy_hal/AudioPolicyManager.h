@@ -1,7 +1,4 @@
 /*
- * Copyright (c) 2013-2015, The Linux Foundation. All rights reserved.
- * Not a contribution.
- *
  * Copyright (C) 2009 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,53 +15,41 @@
  */
 
 
-#include <audiopolicy/managerdefault/AudioPolicyManager.h>
-#include <audio_policy_conf.h>
-#include <Volume.h>
+#include <stdint.h>
+#include <sys/types.h>
+#include <utils/Timers.h>
+#include <utils/Errors.h>
+#include <utils/KeyedVector.h>
+#include <hardware_legacy/AudioPolicyManagerBase.h>
 
 
-namespace android {
+namespace android_audio_legacy {
 
 // ----------------------------------------------------------------------------
 
-class AudioPolicyManagerCustom: public AudioPolicyManager
+class AudioPolicyManager: public AudioPolicyManagerBase
 {
 
 public:
-        AudioPolicyManagerCustom(AudioPolicyClientInterface *clientInterface);
+                AudioPolicyManager(AudioPolicyClientInterface *clientInterface)
+                : AudioPolicyManagerBase(clientInterface) {}
 
-        virtual ~AudioPolicyManagerCustom() {}
-
-        status_t setDeviceConnectionStateInt(audio_devices_t device,
-                                          audio_policy_dev_state_t state,
-                                          const char *device_address,
-                                          const char *device_name);
-        virtual status_t getInputForAttr(const audio_attributes_t *attr,
-                                         audio_io_handle_t *input,
-                                         audio_session_t session,
-                                         uid_t uid,
-                                         uint32_t samplingRate,
-                                         audio_format_t format,
-                                         audio_channel_mask_t channelMask,
-                                         audio_input_flags_t flags,
-                                         audio_port_handle_t selectedDeviceId,
-                                         input_type_t *inputType);
+        virtual ~AudioPolicyManager() {}
 
 protected:
-        // manages A2DP output suspend/restore according to phone state and BT SCO usage
-        void checkA2dpSuspend();
 
-        // check that volume change is permitted, compute and send new volume to audio hardware
-        virtual status_t checkAndSetVolume(audio_stream_type_t stream, int index,
-                                           const sp<AudioOutputDescriptor>& outputDesc,
-                                           audio_devices_t device,
-                                           int delayMs = 0, bool force = false);
+        // true is current platform implements a back microphone
+        virtual bool hasBackMicrophone() const { return true; }
 
-        void updateCallRouting(audio_devices_t rxDevice, int delayMs = 0);
+#ifdef WITH_A2DP
+        // true is current platform supports suplication of notifications and ringtones over A2DP output
+        virtual bool a2dpUsedForSonification() const { return true; }
+#endif
 
-private:
-        float mPrevFMVolumeDb;
-        bool mFMIsActive;
+        // return appropriate device for streams handled by the specified strategy according to current
+        // phone state, connected devices...
+        virtual audio_devices_t getDeviceForStrategy(routing_strategy strategy, bool fromCache = true);
+        virtual float computeVolume(int stream, int index, audio_io_handle_t output, audio_devices_t device);
 };
 
 };
